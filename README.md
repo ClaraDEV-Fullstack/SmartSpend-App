@@ -3,7 +3,15 @@
 SmartSpend is a modern, cross-platform application (Mobile & Web) designed to help users track expenses, manage budgets, and analyze financial habits. Built with Flutter for a beautiful UI and Django for a robust backend.
 
 
-Replace this with an actual screenshot of your dashboard.
+
+## 📸 App Screenshots
+
+| Dashboard | Auth_Cross_Browser                                         |Notifications                                         |
+|-----------|------------------------------------------------------------|------------------------------------------------------|
+| ![Dashboard](assets/screenshots/dashboard.png) | ![AuthCrossBrowser](assets/screenshots/Auth_Cross-Browser.png) | ![Notification](assets/screenshots/Notification.png) |
+
+
+🚀 Getting Starte
 
 ✨ Features
 
