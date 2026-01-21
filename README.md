@@ -48,10 +48,42 @@ Authentication: JWT & OAuth2
 
 Documentation: Swagger / Redoc
 
+📂 Folder Structure
+
+Here’s a clear visual of your project:
+
+SmartSpend/
+├── Backend/
+│   ├── manage.py
+│   ├── requirements.txt
+│   ├── venv/
+│   ├── .env             # NOT committed
+│   ├── app/
+│   │   ├── migrations/
+│   │   ├── models.py
+│   │   ├── views.py
+│   │   └── ...
+│   └── media/           # Uploaded user files
+├── frontend_new/
+│   ├── android/
+│   ├── ios/
+│   ├── lib/
+│   │   ├── core/
+│   │   │   └── config/
+│   │   ├── models/
+│   │   ├── providers/
+│   │   ├── screens/
+│   │   ├── widgets/
+│   │   └── main.dart
+│   ├── build/
+│   └── pubspec.yaml
+├── .gitignore
+└── README.md
+
+
+Tip: This helps contributors understand your folder structure instantly.
+
 🚀 Getting Started
-
-Follow these steps to run the project locally.
-
 Prerequisites
 
 Flutter SDK
@@ -117,11 +149,9 @@ Dashboard	Transactions	Profile
 	
 	
 
-Tip: Take screenshots from your mobile and web app. Include key features, like the Dashboard, Transaction List, Budgeting, and Profile screens.
+Tip: Take screenshots for Mobile and Web. Include key features like: Dashboard, Transaction List, Budget Alerts, and Profile screens.
 
 🤝 Contributing
-
-Contributions are welcome!
 
 Fork the repository
 
@@ -135,12 +165,9 @@ Open a Pull Request
 
 📄 License
 
-This project is open-source and available under the MIT License.
+This project is open-source under the MIT License.
 
-⚠️ .gitignore (Crucial)
-
-Prevent committing secrets or unnecessary files:
-
+⚠️ .gitignore
 # --- Django ---
 Backend/venv/
 Backend/__pycache__/
