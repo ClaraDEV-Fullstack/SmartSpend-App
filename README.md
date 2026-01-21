@@ -1,52 +1,66 @@
-# 💰 SmartSpend - Intelligent Finance Tracker
+💰 SmartSpend - Intelligent Finance Tracker
 
-SmartSpend is a modern, cross-platform (Mobile & Web) application designed to help users track expenses, manage budgets, and analyze financial habits. Built with **Flutter** for a beautiful UI and **Django** for a robust, secure backend.
+SmartSpend is a modern, cross-platform application (Mobile & Web) designed to help users track expenses, manage budgets, and analyze financial habits. Built with Flutter for a beautiful UI and Django for a robust backend.
 
-![SmartSpend Banner](https://via.placeholder.com/1200x400.png?text=SmartSpend+Dashboard+Preview)
-*(Note: Replace this link with an actual screenshot of your app later)*
 
-## ✨ Features
+Replace this with an actual screenshot of your dashboard.
 
-- **📱 Cross-Platform:** Works seamlessly on Android, iOS, and Web.
-- **🔐 Secure Authentication:** Email/Password login & **Google Sign-In**.
-- **💸 Transaction Management:** Track Income and Expenses efficiently.
-- **🔄 Recurring Transactions:** Set up automatic monthly bills or subscriptions.
-- **📊 Interactive Dashboard:** Visual breakdown of spending by category.
-- **📅 Budgeting:** Set monthly limits and get alerts.
-- **📂 Export Data:** Generate PDF and CSV reports of your financial history.
-- **🎨 Modern UI:** A sleek Purple & Gold theme with Dark Mode support.
+✨ Features
 
-## 🛠️ Tech Stack
+📱 Cross-Platform: Android, iOS, and Web support.
 
-### Frontend (Mobile & Web)
-- **Framework:** Flutter (Dart)
-- **State Management:** Provider
-- **Networking:** HTTP & Dio
-- **Auth:** Google Sign-In
-- **Charts:** Fl_Chart
+🔐 Secure Authentication: Email/password login + Google Sign-In.
 
-### Backend (API)
-- **Framework:** Django (Python)
-- **API:** Django REST Framework (DRF)
-- **Database:** SQLite (Dev) / PostgreSQL (Prod)
-- **Auth:** JWT (JSON Web Tokens) & OAuth2
-- **Documentation:** Swagger / Redoc
+💸 Transaction Management: Track income and expenses efficiently.
 
----
+🔄 Recurring Transactions: Automate monthly bills and subscriptions.
 
-## 🚀 Getting Started
+📊 Interactive Dashboard: Visual spending breakdown by category.
 
-Follow these instructions to set up the project locally.
+📅 Budgeting Alerts: Set monthly limits and receive notifications.
 
-### Prerequisites
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) installed.
-- [Python 3.10+](https://www.python.org/downloads/) installed.
-- Git.
+📂 Export Data: Generate PDF & CSV reports.
 
-### 1. Backend Setup (Django)
+🎨 Modern UI: Sleek purple & gold theme with Dark Mode support.
 
-Navigate to the backend folder:
-```bash
+🛠️ Tech Stack
+Frontend (Flutter)
+
+Framework: Flutter (Dart)
+
+State Management: Provider
+
+Networking: HTTP & Dio
+
+Charts: fl_chart
+
+Authentication: Google Sign-In
+
+Backend (Django)
+
+Framework: Django (Python)
+
+API: Django REST Framework (DRF)
+
+Database: SQLite (dev) / PostgreSQL (prod)
+
+Authentication: JWT & OAuth2
+
+Documentation: Swagger / Redoc
+
+🚀 Getting Started
+
+Follow these steps to run the project locally.
+
+Prerequisites
+
+Flutter SDK
+
+Python 3.10+
+
+Git
+
+1️⃣ Backend Setup (Django)
 cd Backend
 
 # Windows
@@ -58,68 +72,75 @@ python3 -m venv venv
 source venv/bin/activate
 
 pip install -r requirements.txt
-
 python manage.py migrate
 python manage.py runserver
 
-The API will run at http://127.0.0.1:8000/
 
-2. Frontend Setup (Flutter)
-Open a new terminal and navigate to the frontend folder:
+The API runs at: http://127.0.0.1:8000/
 
-Bash
-
+2️⃣ Frontend Setup (Flutter)
 cd frontend_new
-Install dependencies:
-
-Bash
-
 flutter pub get
-Configure API URL:
-Check lib/core/config/api_config.dart and ensure baseUrl matches your environment:
 
-Android Emulator: http://10.0.2.2:8000
-Web/iOS: http://127.0.0.1:8000 or http://localhost:8000
+
+Configure API URL: Check lib/core/config/api_config.dart
+
+Platform	API URL
+Android Emulator	http://10.0.2.2:8000
+Web / iOS	http://127.0.0.1:8000
+
 Run the app:
 
-Bash
-
-# For Android
+# Android
 flutter run
 
-# For Web (Chrome)
+# Web (Chrome)
 flutter run -d chrome --web-port=5000
-🔑 Environment Variables
-To run the backend securely, create a .env file in the Backend/ folder:
 
-ini
+3️⃣ Environment Variables
+
+Create a .env file in Backend/:
 
 SECRET_KEY=your_django_secret_key
 DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost,10.0.2.2
-HUGGINGFACE_API_KEY=your_hugging_face_token
-📸 Screenshots
+
+
+Important: Never commit .env to Git. Add it to .gitignore.
+
+4️⃣ Screenshots (Add Your Own)
+
+You should replace the placeholders below with real screenshots from your app.
+
 Dashboard	Transactions	Profile
-Dashboard	Transactions	Profile
+
+	
+	
+
+Tip: Take screenshots from your mobile and web app. Include key features, like the Dashboard, Transaction List, Budgeting, and Profile screens.
+
 🤝 Contributing
-Contributions are welcome! Please fork the repository and submit a pull request.
+
+Contributions are welcome!
+
+Fork the repository
+
+Create a feature branch: git checkout -b feature/YourFeature
+
+Commit changes: git commit -m "Add YourFeature"
+
+Push: git push origin feature/YourFeature
+
+Open a Pull Request
 
 📄 License
+
 This project is open-source and available under the MIT License.
 
-text
+⚠️ .gitignore (Crucial)
 
+Prevent committing secrets or unnecessary files:
 
----
-
-### Part 2: Preparing `.gitignore` (Crucial)
-
-Before you upload, you **MUST** ensure you aren't uploading temporary files, virtual environments, or secrets.
-
-1.  **Root `.gitignore`**: Create a `.gitignore` file in your main folder.
-2.  **Paste this content**:
-
-```gitignore
 # --- Django ---
 Backend/venv/
 Backend/__pycache__/
