@@ -13,7 +13,6 @@ class FlutterLocalNotificationsPlugin {
     dynamic scheduledDate,
     dynamic notificationDetails, {
     dynamic androidScheduleMode,
-    dynamic uiLocalNotificationDateInterpretation,
     dynamic matchDateTimeComponents,
   }) async {}
   T? resolvePlatformSpecificImplementation<T>() => null;
