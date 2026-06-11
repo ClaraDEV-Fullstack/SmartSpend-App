@@ -89,4 +89,36 @@ class Transaction {
       type: 'expense',
     );
   }
+
+  Transaction copyWith({
+    int? id,
+    String? type,
+    double? amount,
+    String? description,
+    DateTime? date,
+    Category? category,
+    String? currency,
+    bool? isRecurring,
+    String? recurrence,
+    DateTime? nextRunDate,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Transaction(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      amount: amount ?? this.amount,
+      description: description ?? this.description,
+      date: date ?? this.date,
+      category: category ?? this.category,
+      currency: currency ?? this.currency,
+      isRecurring: isRecurring ?? this.isRecurring,
+      recurrence: recurrence ?? this.recurrence,
+      nextRunDate: nextRunDate ?? this.nextRunDate,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  bool get isPendingSync => id < 0;
 }

@@ -84,9 +84,30 @@ class LoginSerializer(serializers.Serializer):
     def create(self, validated_data):
         user = validated_data['user']
         refresh = RefreshToken.for_user(user)
-        # ✅ Pass request context to UserSerializer
         return {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
             'user': UserSerializer(user, context=self.context).data
         }
+
+
+class DeleteAccountSerializer(serializers.Serializer):
+    password = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    confirmation = serializers.CharField(required=False, allow_blank=True)
+
+    def validate(self, data):
+        user = self.context['request'].user
+
+        if user.has_usable_password():
+            password = data.get('password', '')
+            if not password:
+                raise serializers.ValidationError({'password': 'Password is required.'})
+            if not user.check_password(password):
+                raise serializers.ValidationError({'password': 'Invalid password.'})
+        else:
+            if data.get('confirmation') != 'DELETE':
+                raise serializers.ValidationError({
+                    'confirmation': 'Type DELETE to confirm account removal.'
+                })
+
+        return data

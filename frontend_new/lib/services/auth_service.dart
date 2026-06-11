@@ -264,16 +264,26 @@ class AuthService {
   }
 
   /// ✅ Uses ApiClient - auto token refresh on 401
-  Future<void> deleteAccount(String password) async {
+  Future<void> deleteAccount({String? password, String? confirmation}) async {
+    final body = <String, dynamic>{};
+    if (password != null && password.isNotEmpty) {
+      body['password'] = password;
+    }
+    if (confirmation != null && confirmation.isNotEmpty) {
+      body['confirmation'] = confirmation;
+    }
+
+    final refreshToken = await getRefreshToken();
+    if (refreshToken != null) {
+      body['refresh'] = refreshToken;
+    }
+
     final response = await _apiClient.post(
-      '${ApiConfig.baseUrl}/api/users/me/delete/',
-      body: {'password': password},
+      ApiConfig.fullUrl(ApiConfig.deleteAccount),
+      body: body,
     );
 
-    print('Delete Account status: ${response.statusCode}');
-    print('Delete Account body: ${response.body}');
-
-    if (response.statusCode == 204 || response.statusCode == 200) {
+    if (response.statusCode == 200 || response.statusCode == 204) {
       await logout();
     } else {
       _handleErrorResponse(response, 'Failed to delete account');
@@ -295,11 +305,26 @@ class AuthService {
   Future<String?> getRefreshToken() async =>
       await _secureStorage.read(key: 'refresh_token');
 
-  Future<void> logout() async {
-    // Sign out from Google if signed in
-    await signOutFromGoogle();
+  Future<bool> hasStoredSession() async {
+    final accessToken = await getAccessToken();
+    final refreshToken = await getRefreshToken();
+    return accessToken != null || refreshToken != null;
+  }
 
-    // Clear stored tokens
+  Future<void> logout() async {
+    final refreshToken = await getRefreshToken();
+    if (refreshToken != null) {
+      try {
+        await _apiClient.post(
+          ApiConfig.fullUrl(ApiConfig.logout),
+          body: {'refresh': refreshToken},
+        );
+      } catch (_) {
+        // Continue local logout even if server blacklist fails
+      }
+    }
+
+    await signOutFromGoogle();
     await _secureStorage.deleteAll();
   }
 
@@ -334,7 +359,7 @@ class AuthService {
     final refreshToken = await getRefreshToken();
     if (refreshToken == null) return null;
 
-    final url = Uri.parse('${ApiConfig.baseUrl}/api/users/auth/google/');
+    final url = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.tokenRefresh}');
     try {
       final response = await http.post(
         url,

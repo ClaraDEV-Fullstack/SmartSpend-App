@@ -21,12 +21,9 @@ class TransactionSerializer(serializers.ModelSerializer):
         allow_null=False
     )
 
-    # Optional field for recurring transactions
-    next_run_date = serializers.DateField(
-        required=False,    # only required if is_recurring=True
-        allow_null=True,
-        help_text="Next date this recurring transaction should occur"
-    )
+    # Optional legacy recurring fields on Transaction
+    is_recurring = serializers.BooleanField(required=False, default=False)
+    recurrence = serializers.CharField(required=False, allow_null=True, allow_blank=True)
 
     class Meta:
         model = Transaction
@@ -36,10 +33,9 @@ class TransactionSerializer(serializers.ModelSerializer):
             'amount',
             'description',
             'date',
-            'category',      # Read-only nested object
-            'category_id',   # Write-only ID field
-            'currency',      # Currency field
-            'next_run_date',
+            'category',
+            'category_id',
+            'currency',
             'is_recurring',
             'recurrence',
             'created_at',
@@ -54,7 +50,7 @@ class TransactionSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """
-        Validate transaction and map next_run_date → date if recurring.
+        Validate transaction ownership and currency.
         """
         user = self.context['request'].user
         category = attrs.get('category')
@@ -65,16 +61,11 @@ class TransactionSerializer(serializers.ModelSerializer):
         if category.user != user:
             raise serializers.ValidationError("You can only use your own categories.")
 
-        # Validate currency
         currency = attrs.get('currency', 'USD')
         if not self.is_valid_currency(currency):
             raise serializers.ValidationError(
                 "Invalid currency code. Use ISO 4217 format (e.g., USD, EUR)."
             )
-
-        # Map next_run_date → date for recurring transactions
-        if attrs.get('is_recurring') and attrs.get('next_run_date'):
-            attrs['date'] = attrs['next_run_date']
 
         return attrs
 

@@ -45,10 +45,12 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
       authProvider: authProvider,
     );
 
-    // Add welcome message if empty
-    if (aiProvider.messages.isEmpty) {
-      aiProvider.sendMessage('Hello');
-    }
+    aiProvider.loadHistory().then((_) {
+      if (!mounted) return;
+      if (aiProvider.messages.isEmpty) {
+        aiProvider.sendMessage('Hello');
+      }
+    });
   }
 
   void _scrollToBottom() {

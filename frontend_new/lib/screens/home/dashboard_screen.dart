@@ -10,6 +10,8 @@ import '../../providers/transaction_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/reports_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../l10n/app_localizations.dart';
+import '../../widgets/dashboard/dashboard_charts.dart';
 
 import '../../models/transaction.dart';
 import '../../models/user.dart';
@@ -20,6 +22,8 @@ import '../categories/categories_screen.dart';
 import '../profile/profile_screen.dart';
 import '../settings/settings_screen.dart';
 import '../reports/reports_screen.dart';
+import '../transactions/recurring_transactions_screen.dart';
+import '../ai/ai_assistant_screen.dart';
 
 import '../../widgets/ai_speed_dial.dart';
 import '../../widgets/empty_states/empty_states.dart';
@@ -107,10 +111,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SmartSpend'),
+        title: Text(l10n.appTitle),
         actions: [
           // 👤 Profile with actual image
           Consumer<AuthProvider>(
@@ -280,7 +285,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Your Balance',
+                              l10n.yourBalance,
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -365,7 +370,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Financial Summary',
+                              l10n.financialSummary,
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -388,13 +393,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      children: const [
-                                        Icon(Icons.arrow_downward,
+                                      children: [
+                                        const Icon(Icons.arrow_downward,
                                             color: Colors.green, size: 16),
-                                        SizedBox(width: 4),
+                                        const SizedBox(width: 4),
                                         Text(
-                                          'Income',
-                                          style: TextStyle(
+                                          l10n.income,
+                                          style: const TextStyle(
                                             color: Colors.green,
                                             fontWeight: FontWeight.w600,
                                             fontSize: 13,
@@ -427,13 +432,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      children: const [
-                                        Icon(Icons.arrow_upward,
+                                      children: [
+                                        const Icon(Icons.arrow_upward,
                                             color: Colors.red, size: 16),
-                                        SizedBox(width: 4),
+                                        const SizedBox(width: 4),
                                         Text(
-                                          'Expense',
-                                          style: TextStyle(
+                                          l10n.expense,
+                                          style: const TextStyle(
                                             color: Colors.red,
                                             fontWeight: FontWeight.w600,
                                             fontSize: 13,
@@ -491,7 +496,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'Net: $symbol${difference.toStringAsFixed(2)}',
+                                '${l10n.net}: $symbol${difference.toStringAsFixed(2)}',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -508,28 +513,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Top Spending Categories
-              Consumer<TransactionProvider>(
-                builder: (context, transactionProvider, child) {
+              // Charts: income vs expense + category breakdown
+              Consumer2<TransactionProvider, SettingsProvider>(
+                builder: (context, transactionProvider, settingsProvider, child) {
                   if (transactionProvider.transactions.isEmpty) {
                     return const SizedBox.shrink();
                   }
 
                   final Map<String, double> categorySpending = {};
-                  for (final transaction in transactionProvider.getExpenseTransactions()) {
+                  for (final transaction
+                      in transactionProvider.getExpenseTransactions()) {
                     final categoryName = transaction.category.name;
                     categorySpending[categoryName] =
-                        (categorySpending[categoryName] ?? 0) + transaction.amount;
+                        (categorySpending[categoryName] ?? 0) +
+                            transaction.amount;
                   }
 
-                  final sortedCategories = categorySpending.entries.toList()
-                    ..sort((a, b) => b.value.compareTo(a.value));
-
-                  final topCategories = sortedCategories.take(3).toList();
-
-                  if (topCategories.isEmpty) {
+                  if (categorySpending.isEmpty &&
+                      transactionProvider.getTotalIncome() == 0) {
                     return const SizedBox.shrink();
                   }
+
+                  final currencyCode =
+                      settingsProvider.settings?.currency ?? 'USD';
+                  final symbol = _getCurrencySymbol(currencyCode);
+                  final colors = categorySpending.keys
+                      .map((name) => _getCategoryColor(name))
+                      .toList();
 
                   return Container(
                     width: double.infinity,
@@ -547,13 +557,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Row(
                           children: [
                             Icon(
-                              Icons.pie_chart_outline,
+                              Icons.insights_outlined,
                               size: 20,
                               color: theme.colorScheme.secondary,
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Top Spending Categories',
+                              l10n.spendingBreakdown,
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -562,51 +572,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.incomeVsExpense,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                        ),
                         const SizedBox(height: 12),
-                        ...topCategories.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final categoryEntry = entry.value;
-                          final color = _getCategoryColor(categoryEntry.key);
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: color,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    categoryEntry.key,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14,
-                                      color: theme.colorScheme.onSurface,
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  '\$${categoryEntry.value.toStringAsFixed(2)}',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    color: theme.colorScheme.onSurface,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
+                        DashboardCharts(
+                          totalIncome: transactionProvider.getTotalIncome(),
+                          totalExpense: transactionProvider.getTotalExpense(),
+                          categorySpending: categorySpending,
+                          currencySymbol: symbol,
+                          categoryColors: colors,
+                        ),
                       ],
                     ),
                   );
                 },
               ),
+              const SizedBox(height: 16),
+
+              if (context.watch<TransactionProvider>().isOfflineMode ||
+                  context.watch<CategoryProvider>().isOfflineMode)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.orange.withOpacity(0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.cloud_off, color: Colors.orange),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          l10n.offlineMode,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               const SizedBox(height: 16),
 
               // Recent Transactions Header
@@ -616,7 +629,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Recent Transactions',
+                      l10n.recentTransactions,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -808,7 +821,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Quick Access',
+                      l10n.quickAccess,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -834,7 +847,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisSpacing: 12,
                 children: [
                   _FeatureItem(
-                    title: 'Transactions',
+                    title: l10n.transactions,
                     icon: Icons.receipt_long,
                     color: isDark ? AppTheme.lightPurple : AppTheme.primaryPurple,
                     onTap: () => Navigator.of(context).push(
@@ -844,7 +857,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   _FeatureItem(
-                    title: 'Categories',
+                    title: l10n.recurring,
+                    icon: Icons.repeat,
+                    color: isDark ? AppTheme.lightGold : AppTheme.deepGold,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const RecurringTransactionsScreen(),
+                      ),
+                    ),
+                  ),
+                  _FeatureItem(
+                    title: l10n.categories,
                     icon: Icons.category,
                     color: isDark ? AppTheme.lightGold : AppTheme.deepGold,
                     onTap: () => Navigator.of(context).push(
@@ -854,7 +877,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   _FeatureItem(
-                    title: 'Reports',
+                    title: l10n.reports,
                     icon: Icons.bar_chart,
                     color: isDark ? AppTheme.lightPurple : AppTheme.darkPurple,
                     onTap: () => Navigator.of(context).push(
@@ -864,12 +887,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   _FeatureItem(
-                    title: 'Settings',
+                    title: l10n.settings,
                     icon: Icons.settings,
                     color: isDark ? AppTheme.lightGold : AppTheme.darkGold,
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => const SettingsScreen(),
+                      ),
+                    ),
+                  ),
+                  _FeatureItem(
+                    title: l10n.aiAssistant,
+                    icon: Icons.smart_toy,
+                    color: isDark ? AppTheme.lightPurple : AppTheme.primaryPurple,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const AiAssistantScreen(),
                       ),
                     ),
                   ),
@@ -1038,6 +1071,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       await categoryProvider.fetchCategories();
     }
     await reportsProvider.fetchReportSummary();
+
+    final settings = settingsProvider.settings;
+    if (settings != null && settings.budgetAlerts && settings.monthlyBudget > 0) {
+      await transactionProvider.checkBudgetAlert(
+        monthlyBudget: settings.monthlyBudget,
+        currency: settings.currency,
+      );
+    }
   }
 
   IconData _getIconData(String iconName) {

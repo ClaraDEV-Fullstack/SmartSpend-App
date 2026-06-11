@@ -116,4 +116,34 @@ class RecurringTransaction {
     if (totalExecutions != null && (executionCount ?? 0) >= totalExecutions!) return false;
     return true;
   }
+
+  RecurringTransaction copyWith({
+    int? id,
+    String? type,
+    double? amount,
+    String? description,
+    int? categoryId,
+    String? currency,
+    RecurrenceFrequency? frequency,
+    DateTime? nextRunDate,
+    DateTime? endDate,
+    int? executionCount,
+    int? totalExecutions,
+  }) {
+    return RecurringTransaction(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      amount: amount ?? this.amount,
+      description: description ?? this.description,
+      categoryId: categoryId ?? this.categoryId,
+      currency: currency ?? this.currency,
+      frequency: frequency ?? this.frequency,
+      nextRunDate: nextRunDate ?? this.nextRunDate,
+      endDate: endDate ?? this.endDate,
+      executionCount: executionCount ?? this.executionCount,
+      totalExecutions: totalExecutions ?? this.totalExecutions,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
 }

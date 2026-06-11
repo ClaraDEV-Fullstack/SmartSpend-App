@@ -3,6 +3,7 @@
 import requests
 import logging
 from django.conf import settings
+from ai.prompts import build_system_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -55,30 +56,4 @@ class HuggingFaceService:
             return {'response': "Network error connecting to AI.", 'type': 'error'}
 
     def _build_system_prompt(self, context):
-        curr = context.get('currency', 'USD')
-
-        base = f"""You are SmartSpend AI, a helpful financial assistant.
-        
-        USER CONTEXT:
-        - Balance: {curr} {context.get('total_balance', 0)}
-        - Income: {curr} {context.get('total_income', 0)}
-        - Expenses: {curr} {context.get('total_expense', 0)}
-        
-        RECENT TRANSACTIONS:
-        """
-
-        # Add recent transactions to context
-        transactions = context.get('recent_transactions', [])
-        for t in transactions[:5]:
-            description = t.get('description', 'Unknown')
-            amount = t.get('amount', 0)
-            date = t.get('date', '')[:10] if t.get('date') else ''
-            base += f"- {date}: {description} ({curr} {amount})\n"
-
-        base += """
-        GUIDELINES:
-        1. Answer based on the data above.
-        2. Keep it short, helpful and friendly. Use emojis.
-        3. If asked to add a transaction, say: "I can help! Say 'Add 50 for lunch'."
-        """
-        return base
+        return build_system_prompt(context)

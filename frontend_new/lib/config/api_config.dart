@@ -23,7 +23,9 @@ class ApiConfig {
   static const String register = '$_apiPrefix/users/register/';
   static const String login = '$_apiPrefix/users/login/';
   static const String profile = '$_apiPrefix/users/me/';
-  static const String profileImage = '$_apiPrefix/users/me/image/';  // ADD THIS
+  static const String deleteAccount = '$_apiPrefix/users/me/delete/';
+  static const String logout = '$_apiPrefix/users/logout/';
+  static const String profileImage = '$_apiPrefix/users/profile/image/';
   static const String tokenRefresh = '$_apiPrefix/users/token/refresh/';
   static const String passwordChange = '$_apiPrefix/settings/auth/password/change/';
 
@@ -57,6 +59,7 @@ class ApiConfig {
 // ===========================
   static const String aiAssist = '$_apiPrefix/ai/assist/';
   static const String aiHistory = '$_apiPrefix/ai/history/';
+  static const String aiStatus = '$_apiPrefix/ai/status/';
 
 
 }

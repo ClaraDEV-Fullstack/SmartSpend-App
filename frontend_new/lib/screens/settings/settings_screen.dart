@@ -11,6 +11,8 @@ import '../../providers/transaction_provider.dart';
 import '../../services/theme_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/biometric_service.dart';
+import '../../services/locale_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/export_service.dart';
 import '../../models/user_setting.dart';
 
@@ -176,6 +178,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: Text(_formatThemeMode(themeService.themeMode)),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _showThemeSelector(themeService),
+              );
+            },
+          ),
+          const Divider(),
+          Consumer<LocaleService>(
+            builder: (context, localeService, child) {
+              final l10n = AppLocalizations.of(context)!;
+              return ListTile(
+                leading: const Icon(Icons.language, color: Colors.indigo),
+                title: Text(l10n.language),
+                subtitle: Text(_formatLanguage(localeService, l10n)),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _showLanguageSelector(localeService, l10n),
               );
             },
           ),
@@ -1188,6 +1203,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case ThemeMode.system:
         return 'System Default';
     }
+  }
+
+  String _formatLanguage(LocaleService localeService, AppLocalizations l10n) {
+    switch (localeService.currentLanguageCode) {
+      case 'fr':
+        return l10n.languageFrench;
+      case 'en':
+        return l10n.languageEnglish;
+      default:
+        return l10n.languageSystem;
+    }
+  }
+
+  void _showLanguageSelector(LocaleService localeService, AppLocalizations l10n) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Text(l10n.languageSystem),
+              trailing: localeService.locale == null
+                  ? const Icon(Icons.check, color: Colors.green)
+                  : null,
+              onTap: () async {
+                await localeService.setLocale(null);
+                if (context.mounted) Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: Text(l10n.languageEnglish),
+              trailing: localeService.locale?.languageCode == 'en'
+                  ? const Icon(Icons.check, color: Colors.green)
+                  : null,
+              onTap: () async {
+                await localeService.setLocale(const Locale('en'));
+                if (context.mounted) Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: Text(l10n.languageFrench),
+              trailing: localeService.locale?.languageCode == 'fr'
+                  ? const Icon(Icons.check, color: Colors.green)
+                  : null,
+              onTap: () async {
+                await localeService.setLocale(const Locale('fr'));
+                if (context.mounted) Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   String _getCurrencySymbol(String currency) {

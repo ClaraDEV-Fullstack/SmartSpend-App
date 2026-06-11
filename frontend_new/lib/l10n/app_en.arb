@@ -1,0 +1,47 @@
+{
+  "@@locale": "en",
+  "appTitle": "SmartSpend",
+  "appTagline": "Manage your finances with ease",
+  "welcomeBack": "Welcome Back!",
+  "signInToContinue": "Sign in to continue",
+  "email": "Email",
+  "password": "Password",
+  "login": "Login",
+  "register": "Register",
+  "dontHaveAccount": "Don't have an account?",
+  "continueWithGoogle": "Continue with Google",
+  "unlockWithBiometric": "Unlock with {biometricType}",
+  "@unlockWithBiometric": {
+    "placeholders": {
+      "biometricType": {
+        "type": "String"
+      }
+    }
+  },
+  "yourBalance": "Your Balance",
+  "financialSummary": "Financial Summary",
+  "income": "Income",
+  "expense": "Expense",
+  "net": "Net",
+  "topSpendingCategories": "Top Spending Categories",
+  "spendingBreakdown": "Spending Breakdown",
+  "incomeVsExpense": "Income vs Expense",
+  "recentTransactions": "Recent Transactions",
+  "quickAccess": "Quick Access",
+  "transactions": "Transactions",
+  "recurring": "Recurring",
+  "categories": "Categories",
+  "reports": "Reports",
+  "settings": "Settings",
+  "aiAssistant": "AI Assistant",
+  "language": "Language",
+  "languageSystem": "System default",
+  "languageEnglish": "English",
+  "languageFrench": "French",
+  "offlineMode": "Offline mode",
+  "retry": "Retry",
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "refresh": "Refresh"
+}

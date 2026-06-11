@@ -1,5 +1,7 @@
 # ai/services/ai_manager.py
 
+from django.conf import settings
+
 from .huggingface_service import HuggingFaceService
 from .local_service import LocalService
 
@@ -23,9 +25,17 @@ class AIManager:
 
         if local_result is not None:
             print("✅ Handled by Local Service")
+            local_result['_service'] = 'local'
             return local_result
 
-        # 2. Fallback to AI (Hugging Face)
-        # If local didn't catch it, it's likely a conversational query
         print("🤖 Routing to Hugging Face AI...")
-        return self.ai.process(message, context)
+        result = self.ai.process(message, context)
+        result['_service'] = 'huggingface'
+        return result
+
+    def get_status(self) -> dict:
+        return {
+            'local_service': True,
+            'huggingface_configured': bool(settings.HUGGINGFACE_API_KEY),
+            'model': settings.HUGGINGFACE_MODEL,
+        }

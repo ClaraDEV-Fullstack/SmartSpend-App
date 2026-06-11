@@ -2,6 +2,8 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:timezone/data/latest.dart' as tz_data;
+import 'package:timezone/timezone.dart' as tz;
 
 // Only import these on non-web platforms
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
@@ -33,12 +35,13 @@ class NotificationService with ChangeNotifier {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    // Skip initialization on web
     if (kIsWeb) {
       _isInitialized = true;
       debugPrint('NotificationService: Web platform - notifications limited');
       return;
     }
+
+    tz_data.initializeTimeZones();
 
     _notifications = FlutterLocalNotificationsPlugin();
 
@@ -187,13 +190,62 @@ class NotificationService with ChangeNotifier {
 
   /// Schedule daily reminder notification
   Future<void> scheduleDailyReminder() async {
-    if (!_notificationsEnabled || kIsWeb) return;
+    if (!_notificationsEnabled || kIsWeb || _notifications == null) return;
 
-    await _notifications?.cancelAll();
+    await _notifications!.cancel(1000);
 
-    // Note: For proper scheduling, you'd need timezone package
-    // This is a simplified version
-    debugPrint('Daily reminder scheduled for ${_notificationTime.hour}:${_notificationTime.minute}');
+    final scheduledDate = _nextInstanceOfTime(_notificationTime);
+
+    const androidDetails = AndroidNotificationDetails(
+      'smartspend_reminders',
+      'Daily Reminders',
+      channelDescription: 'Daily expense tracking reminders',
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications!.zonedSchedule(
+      1000,
+      'SmartSpend Reminder',
+      'Don\'t forget to log your expenses today!',
+      scheduledDate,
+      details,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+
+    debugPrint(
+      'Daily reminder scheduled for ${_notificationTime.hour}:${_notificationTime.minute}',
+    );
+  }
+
+  tz.TZDateTime _nextInstanceOfTime(TimeOfDay time) {
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      time.hour,
+      time.minute,
+    );
+    if (scheduled.isBefore(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+    return scheduled;
   }
 
   /// Set notification time

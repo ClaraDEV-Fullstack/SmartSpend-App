@@ -25,6 +25,65 @@ class AuthProvider with ChangeNotifier {
 
   Future<String?> getToken() => _authService.getAccessToken();
 
+  Future<bool> hasStoredSession() => _authService.hasStoredSession();
+
+  Future<void> restoreSession() async {
+    _setLoading(true);
+    clearError();
+    try {
+      final token = await _authService.getValidAccessToken();
+      if (token == null) {
+        _user = null;
+        return;
+      }
+      _user = await _authService.getUserProfile();
+    } catch (e) {
+      _setError(e.toString());
+      _user = null;
+      await _authService.logout();
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? username,
+  }) async {
+    _setLoading(true);
+    clearError();
+    try {
+      _user = await _authService.updateProfile(
+        firstName: firstName,
+        lastName: lastName,
+        username: username,
+      );
+    } catch (e) {
+      _setError(e.toString());
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> deleteAccount({String? password, String? confirmation}) async {
+    _setLoading(true);
+    clearError();
+    try {
+      await _authService.deleteAccount(
+        password: password,
+        confirmation: confirmation,
+      );
+      _user = null;
+    } catch (e) {
+      _setError(e.toString());
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   void clearError() {
     _error = null;
     notifyListeners();

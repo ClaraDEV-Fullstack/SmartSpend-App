@@ -202,11 +202,15 @@ class AiProvider with ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
+      final actionType = _pendingAction!.type;
       final success = await _executeAction(_pendingAction!);
 
       if (success) {
         _pendingAction = _pendingAction!.copyWith(status: AiActionStatus.executed);
-        _messages.add(AiMessage.assistant('✅ Done! Transaction added successfully.'));
+        final message = actionType == AiActionType.setBudget
+            ? '✅ Done! Monthly budget updated.'
+            : '✅ Done! Transaction added successfully.';
+        _messages.add(AiMessage.assistant(message));
       }
 
       _pendingAction = null;
@@ -237,6 +241,9 @@ class AiProvider with ChangeNotifier {
     switch (action.type) {
       case AiActionType.addTransaction:
         return await _executeAddTransaction(action);
+
+      case AiActionType.setBudget:
+        return await _executeSetBudget(action);
 
       case AiActionType.showSummary:
       case AiActionType.showCategory:
@@ -320,12 +327,63 @@ class AiProvider with ChangeNotifier {
     return true;
   }
 
-  /// Clear conversation
-  void clearConversation() {
+  Future<bool> _executeSetBudget(AiAction action) async {
+    if (_settingsProvider == null) {
+      throw Exception('Settings provider not initialized');
+    }
+
+    final budget = action.amount ??
+        (action.data['budget'] is num
+            ? (action.data['budget'] as num).toDouble()
+            : double.tryParse(action.data['budget']?.toString() ?? ''));
+
+    if (budget == null || budget <= 0) {
+      throw Exception('Invalid budget amount');
+    }
+
+    await _settingsProvider!.updateSettings({
+      'monthly_budget': budget,
+      'budget_alerts': true,
+    });
+
+    return true;
+  }
+
+  /// Clear conversation locally and on server
+  Future<void> clearConversation() async {
+    try {
+      await _aiService.clearHistory();
+    } catch (_) {
+      // Still clear local state if server call fails
+    }
     _messages.clear();
     _pendingAction = null;
     _error = null;
     notifyListeners();
+  }
+
+  /// Load persisted history from backend
+  Future<void> loadHistory() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final history = await _aiService.getHistory();
+      _messages.clear();
+      for (final item in history) {
+        final content = item['content']?.toString() ?? '';
+        if (item['role'] == 'user') {
+          _messages.add(AiMessage.user(content));
+        } else {
+          _messages.add(AiMessage.assistant(content));
+        }
+      }
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   /// Get suggestions

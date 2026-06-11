@@ -10,32 +10,33 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+import sys
 from pathlib import Path
-# settings.py (at the top)
 from dotenv import load_dotenv
+
 load_dotenv()
 
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # === AI Configuration ===
-# Replace Gemini with Hugging Face (Free)
 HUGGINGFACE_API_KEY = os.getenv('HUGGINGFACE_API_KEY')
-HUGGINGFACE_MODEL = 'mistralai/Mistral-7B-Instruct-v0.3'  # Excellent free model
+HUGGINGFACE_MODEL = 'mistralai/Mistral-7B-Instruct-v0.3'
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# === Google Sign-In ===
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-hknm=vl0&!r0tqmp7st(zlv*su32u0&a)p*(s8e=3n%07%7fmd'
+SECRET_KEY = os.getenv(
+    'SECRET_KEY',
+    'django-insecure-hknm=vl0&!r0tqmp7st(zlv*su32u0&a)p*(s8e=3n%07%7fmd',
+)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-# 👇 Add this line
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "10.0.2.2"]
+ALLOWED_HOSTS = os.getenv(
+    'ALLOWED_HOSTS',
+    '127.0.0.1,localhost,10.0.2.2',
+).split(',')
 
 
 
@@ -154,13 +155,21 @@ WSGI_APPLICATION = 'expense_tracker.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'expense_tracker',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
+        'NAME': os.getenv('DB_NAME', 'expense_tracker'),
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
+
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'test_db.sqlite3',
+        }
+    }
 
 
 # Password validation

@@ -21,6 +21,16 @@ class LocalDatabaseService {
     await box.putAll({for (var entity in categoryEntities) entity.id: entity});
   }
 
+  Future<void> saveCategory(app_model.Category category) async {
+    final box = await Hive.openBox<CategoryEntity>(_categoriesBoxName);
+    await box.put(category.id, _mapCategoryModelToEntity(category));
+  }
+
+  Future<void> deleteCategory(int categoryId) async {
+    final box = await Hive.openBox<CategoryEntity>(_categoriesBoxName);
+    await box.delete(categoryId);
+  }
+
   // --- TRANSACTION OPERATIONS ---
   Future<List<app_model.Transaction>> getAllTransactions() async {
     final transactionBox = await Hive.openBox<TransactionEntity>(_transactionsBoxName);

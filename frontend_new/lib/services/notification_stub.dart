@@ -4,7 +4,18 @@
 class FlutterLocalNotificationsPlugin {
   Future<void> initialize(dynamic settings, {Function? onDidReceiveNotificationResponse}) async {}
   Future<void> show(int id, String? title, String? body, dynamic details, {String? payload}) async {}
+  Future<void> cancel(int id) async {}
   Future<void> cancelAll() async {}
+  Future<void> zonedSchedule(
+    int id,
+    String? title,
+    String? body,
+    dynamic scheduledDate,
+    dynamic notificationDetails, {
+    dynamic androidScheduleMode,
+    dynamic uiLocalNotificationDateInterpretation,
+    dynamic matchDateTimeComponents,
+  }) async {}
   T? resolvePlatformSpecificImplementation<T>() => null;
 }
 
@@ -70,4 +81,19 @@ class AndroidFlutterLocalNotificationsPlugin {
 
 class IOSFlutterLocalNotificationsPlugin {
   Future<bool?> requestPermissions({bool alert = false, bool badge = false, bool sound = false}) async => false;
+}
+
+class AndroidScheduleMode {
+  static const inexactAllowWhileIdle = AndroidScheduleMode._();
+  const AndroidScheduleMode._();
+}
+
+class UILocalNotificationDateInterpretation {
+  static const absoluteTime = UILocalNotificationDateInterpretation._();
+  const UILocalNotificationDateInterpretation._();
+}
+
+class DateTimeComponents {
+  static const time = DateTimeComponents._();
+  const DateTimeComponents._();
 }

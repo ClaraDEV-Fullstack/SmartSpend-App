@@ -40,4 +40,26 @@ class Category {
 
   @override
   String toString() => 'Category(id: $id, name: $name, type: $type)';
+
+  bool get isPendingSync => id < 0;
+
+  Category copyWith({
+    int? id,
+    String? name,
+    String? type,
+    String? color,
+    String? icon,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Category(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      color: color ?? this.color,
+      icon: icon ?? this.icon,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

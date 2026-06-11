@@ -697,8 +697,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildActionTile(
             Icons.logout,
             'Logout',
-                () => _showLogoutConfirmation(context, authProvider),
+            () => _showLogoutConfirmation(context, authProvider),
             color: Colors.orange,
+          ),
+          const SizedBox(height: 8),
+          _buildActionTile(
+            Icons.delete_forever,
+            'Delete Account',
+            () => _showDeleteAccountDialog(context, authProvider),
+            color: Colors.red,
           ),
         ],
       ),
@@ -1018,31 +1025,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
+              final authProvider =
+                  Provider.of<AuthProvider>(context, listen: false);
               Navigator.of(context).pop();
 
-              // Show loading
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Updating profile...'),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              );
-
-              // TODO: Implement profile update in AuthProvider/AuthService
-              // For now, show success message
-              await Future.delayed(const Duration(seconds: 1));
-
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Profile updated successfully!'),
-                    backgroundColor: Colors.green,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
+              try {
+                await authProvider.updateProfile(
+                  firstName: firstNameController.text.trim(),
+                  lastName: lastNameController.text.trim(),
                 );
-                _refreshProfile();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Profile updated successfully!'),
+                      backgroundColor: Colors.green,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  );
+                  _refreshProfile();
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        authProvider.error ?? 'Failed to update profile',
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               }
             },
             child: const Text('Save'),
@@ -1251,6 +1266,99 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _showDeleteAccountDialog(
+    BuildContext context,
+    AuthProvider authProvider,
+  ) async {
+    final passwordController = TextEditingController();
+    final confirmationController = TextEditingController();
+    final isGoogleUser = await authProvider.isSignedInWithGoogle();
+
+    if (!context.mounted) return;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Delete Account'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'This action is permanent. All your transactions, categories, and settings will be deleted.',
+              ),
+              const SizedBox(height: 16),
+              if (isGoogleUser)
+                TextField(
+                  controller: confirmationController,
+                  decoration: const InputDecoration(
+                    labelText: 'Type DELETE to confirm',
+                    border: OutlineInputBorder(),
+                  ),
+                )
+              else
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Current password',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              try {
+                await authProvider.deleteAccount(
+                  password: isGoogleUser ? null : passwordController.text.trim(),
+                  confirmation: isGoogleUser
+                      ? confirmationController.text.trim()
+                      : null,
+                );
+                if (mounted) {
+                  Navigator.of(context).pushReplacementNamed('/login');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Account deleted successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        authProvider.error ??
+                            e.toString().replaceFirst('Exception: ', ''),
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Delete Account'),
+          ),
+        ],
+      ),
+    );
+
+    passwordController.dispose();
+    confirmationController.dispose();
   }
 
   // ============ HELPERS ============

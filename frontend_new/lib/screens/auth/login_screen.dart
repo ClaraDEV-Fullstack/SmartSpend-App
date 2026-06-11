@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/login_request.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/biometric_service.dart';
 import '../../theme/app_theme.dart';
+import '../../l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +20,44 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _canUseBiometric = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkBiometricAvailability());
+  }
+
+  Future<void> _checkBiometricAvailability() async {
+    final biometricService = context.read<BiometricService>();
+    final authProvider = context.read<AuthProvider>();
+
+    await biometricService.initialize();
+    final hasSession = await authProvider.hasStoredSession();
+
+    if (mounted) {
+      setState(() {
+        _canUseBiometric =
+            hasSession && biometricService.shouldUseBiometric();
+      });
+    }
+  }
+
+  Future<void> _handleBiometricUnlock() async {
+    final biometricService = context.read<BiometricService>();
+    final authProvider = context.read<AuthProvider>();
+    authProvider.clearError();
+
+    final authenticated = await biometricService.authenticate(
+      reason: 'Unlock SmartSpend',
+    );
+    if (!authenticated || !mounted) return;
+
+    await authProvider.restoreSession();
+    if (authProvider.isLoggedIn && mounted) {
+      Navigator.pushReplacementNamed(context, '/dashboard');
+    }
+  }
 
   @override
   void dispose() {
@@ -41,6 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: Container(
@@ -79,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       children: [
                         Text(
-                          'Welcome Back!',
+                          l10n.welcomeBack,
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -88,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Sign in to continue',
+                          l10n.signInToContinue,
                           style: TextStyle(
                             fontSize: 14,
                             color: theme.colorScheme.onSurface.withOpacity(0.6),
@@ -175,9 +216,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                       elevation: 4,
                                     ),
-                                    child: const Text(
-                                      'Login',
-                                      style: TextStyle(
+                                    child: Text(
+                                      l10n.login,
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -187,37 +228,55 @@ class _LoginScreenState extends State<LoginScreen> {
 
                                 const SizedBox(height: 20),
 
-                                // OR Divider
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Divider(
-                                        color: theme.colorScheme.onSurface
-                                            .withOpacity(0.2),
+                                if (_canUseBiometric) ...[
+                                  OutlinedButton.icon(
+                                    onPressed: provider.isLoading
+                                        ? null
+                                        : _handleBiometricUnlock,
+                                    icon: const Icon(Icons.fingerprint),
+                                    label: Text(
+                                      l10n.unlockWithBiometric(
+                                        context.read<BiometricService>().biometricTypeName,
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
-                                      child: Text(
-                                        'OR',
-                                        style: TextStyle(
+                                    style: OutlinedButton.styleFrom(
+                                      minimumSize: const Size(double.infinity, 50),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Divider(
                                           color: theme.colorScheme.onSurface
-                                              .withOpacity(0.6),
-                                          fontWeight: FontWeight.w600,
+                                              .withOpacity(0.2),
                                         ),
                                       ),
-                                    ),
-                                    Expanded(
-                                      child: Divider(
-                                        color: theme.colorScheme.onSurface
-                                            .withOpacity(0.2),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: Text(
+                                          'OR',
+                                          style: TextStyle(
+                                            color: theme.colorScheme.onSurface
+                                                .withOpacity(0.6),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-
-                                const SizedBox(height: 20),
+                                      Expanded(
+                                        child: Divider(
+                                          color: theme.colorScheme.onSurface
+                                              .withOpacity(0.2),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
 
                                 // Google Sign-In Button
                                 _buildGoogleButton(provider.isLoading),
@@ -282,8 +341,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        const Text(
-          'SmartSpend',
+            const Text(
+              'SmartSpend',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
