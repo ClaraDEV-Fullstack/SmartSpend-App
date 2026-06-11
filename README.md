@@ -1,200 +1,73 @@
-💰 SmartSpend - Intelligent Finance Tracker
+# SmartSpend — Intelligent Finance Tracker
 
-SmartSpend is a modern, cross-platform application (Mobile & Web) designed to help users track expenses, manage budgets, and analyze financial habits. Built with Flutter for a beautiful UI and Django for a robust backend.
+Modern cross-platform personal finance app (Mobile & Web) for tracking expenses, budgets, and financial habits.
 
+## Screenshots
 
+| Dashboard | Auth (Cross-Browser) | Notifications |
+|-----------|----------------------|---------------|
+| ![Dashboard](assets/screenshots/dashboard.png) | ![Auth](assets/screenshots/Auth_Cross-Browser.png) | ![Notifications](assets/screenshots/Notification.png) |
 
-## 📸 App Screenshots
+## Features
 
-| Dashboard | Auth_Cross_Browser                                         |Notifications                                         |
-|-----------|------------------------------------------------------------|------------------------------------------------------|
-| ![Dashboard](assets/screenshots/dashboard.png) | ![AuthCrossBrowser](assets/screenshots/Auth_Cross-Browser.png) | ![Notification](assets/screenshots/Notification.png) |
+- Cross-platform: Android, iOS, Web, Windows
+- Secure auth: email/password, Google Sign-In, biometric unlock
+- Offline-first: transaction & category sync queues
+- Dashboard charts, budget alerts, CSV/PDF export
+- Recurring transactions + AI assistant
+- English/French localization
 
+## Tech Stack
 
-🚀 Getting Starte
+| Layer | Stack |
+|-------|-------|
+| Frontend | Flutter, Provider, Hive, fl_chart |
+| Backend | Django 5, DRF, SimpleJWT |
+| Database | SQLite (local dev) / MySQL (production) |
 
-✨ Features
+## Project structure
 
-📱 Cross-Platform: Android, iOS, and Web support.
+```
+SmartSpend-App/
+├── backend/           # Django REST API
+├── frontend_new/      # Flutter app
+├── assets/            # Screenshots & media
+└── .github/workflows/ # CI
+```
 
-🔐 Secure Authentication: Email/password login + Google Sign-In.
+## Quick start
 
-💸 Transaction Management: Track income and expenses efficiently.
+### 1. Backend
 
-🔄 Recurring Transactions: Automate monthly bills and subscriptions.
-
-📊 Interactive Dashboard: Visual spending breakdown by category.
-
-📅 Budgeting Alerts: Set monthly limits and receive notifications.
-
-📂 Export Data: Generate PDF & CSV reports.
-
-🎨 Modern UI: Sleek purple & gold theme with Dark Mode support.
-
-🛠️ Tech Stack
-Frontend (Flutter)
-
-Framework: Flutter (Dart)
-
-State Management: Provider
-
-Networking: HTTP & Dio
-
-Charts: fl_chart
-
-Authentication: Google Sign-In
-
-Backend (Django)
-
-Framework: Django (Python)
-
-API: Django REST Framework (DRF)
-
-Database: SQLite (dev) / PostgreSQL (prod)
-
-Authentication: JWT & OAuth2
-
-Documentation: Swagger / Redoc
-
-📂 Folder Structure
-
-Here’s a clear visual of your project:
-
-SmartSpend/
-├── Backend/
-│   ├── manage.py
-│   ├── requirements.txt
-│   ├── venv/
-│   ├── .env             # NOT committed
-│   ├── app/
-│   │   ├── migrations/
-│   │   ├── models.py
-│   │   ├── views.py
-│   │   └── ...
-│   └── media/           # Uploaded user files
-├── frontend_new/
-│   ├── android/
-│   ├── ios/
-│   ├── lib/
-│   │   ├── core/
-│   │   │   └── config/
-│   │   ├── models/
-│   │   ├── providers/
-│   │   ├── screens/
-│   │   ├── widgets/
-│   │   └── main.dart
-│   ├── build/
-│   └── pubspec.yaml
-├── .gitignore
-└── README.md
-
-
-Tip: This helps contributors understand your folder structure instantly.
-
-🚀 Getting Started
-Prerequisites
-
-Flutter SDK
-
-Python 3.10+
-
-Git
-
-1️⃣ Backend Setup (Django)
-cd Backend
-
-# Windows
+```bash
+cd backend
 python -m venv venv
-.\venv\Scripts\activate
-
-# Mac/Linux
-python3 -m venv venv
-source venv/bin/activate
-
+.\venv\Scripts\activate          # Windows
 pip install -r requirements.txt
+copy .env.example .env
 python manage.py migrate
 python manage.py runserver
+```
 
+Set `USE_SQLITE=True` in `.env` for local dev without MySQL.
 
-The API runs at: http://127.0.0.1:8000/
+### 2. Frontend
 
-2️⃣ Frontend Setup (Flutter)
+```bash
 cd frontend_new
 flutter pub get
-
-
-Configure API URL: Check lib/core/config/api_config.dart
-
-Platform	API URL
-Android Emulator	http://10.0.2.2:8000
-Web / iOS	http://127.0.0.1:8000
-
-Run the app:
-
-# Android
-flutter run
-
-# Web (Chrome)
 flutter run -d chrome --web-port=5000
+```
 
-3️⃣ Environment Variables
+Full setup details (Google OAuth, env vars, tests): see **[frontend_new/README.md](frontend_new/README.md)**.
 
-Create a .env file in Backend/:
+## Contributing
 
-SECRET_KEY=your_django_secret_key
-DEBUG=True
-ALLOWED_HOSTS=127.0.0.1,localhost,10.0.2.2
+1. Fork the repo
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Commit and push
+4. Open a Pull Request
 
+## License
 
-Important: Never commit .env to Git. Add it to .gitignore.
-
-4️⃣ Screenshots (Add Your Own)
-
-You should replace the placeholders below with real screenshots from your app.
-
-Dashboard	Transactions	Profile
-
-	
-	
-
-Tip: Take screenshots for Mobile and Web. Include key features like: Dashboard, Transaction List, Budget Alerts, and Profile screens.
-
-🤝 Contributing
-
-Fork the repository
-
-Create a feature branch: git checkout -b feature/YourFeature
-
-Commit changes: git commit -m "Add YourFeature"
-
-Push: git push origin feature/YourFeature
-
-Open a Pull Request
-
-📄 License
-
-This project is open-source under the MIT License.
-
-⚠️ .gitignore
-# --- Django ---
-Backend/venv/
-Backend/__pycache__/
-Backend/*.sqlite3
-Backend/.env
-Backend/media/
-*.pyc
-
-# --- Flutter ---
-frontend_new/build/
-frontend_new/.dart_tool/
-frontend_new/.flutter-plugins
-frontend_new/.flutter-plugins-dependencies
-frontend_new/.idea/
-frontend_new/android/.gradle
-frontend_new/ios/.symlinks/
-frontend_new/ios/Pods/
-
-# --- IDEs ---
-.vscode/
-.idea/
-*.DS_Store
+MIT License
